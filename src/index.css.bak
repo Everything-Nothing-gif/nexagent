@@ -1,0 +1,15 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --brand: #0f6e56; --brand-mid: #1d9e75; --brand-light: #e1f5ee;
+  --accent-lt: #faeeda; --surface: #ffffff; --surface2: #f7f6f2;
+  --surface3: #efeee9; --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #1a1a18; --text2: #5a5a55; --text3: #9a9a93;
+  --danger: #c0392b; --danger-lt: #fdf0ee;
+  --mono: 'DM Mono', monospace; --display: 'Syne', sans-serif;
+  --radius: 12px; --radius-sm: 8px;
+}
+html, body, #root { height: 100%; background: var(--surface2); color: var(--text); font-family: var(--display); -webkit-font-smoothing: antialiased; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
