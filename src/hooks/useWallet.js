@@ -1,7 +1,3 @@
-/**
- * src/hooks/useWallet.js
- * Manages Pera Wallet connection state across the app
- */
 import { useState, useEffect, useCallback } from 'react'
 import {
   connectWallet,

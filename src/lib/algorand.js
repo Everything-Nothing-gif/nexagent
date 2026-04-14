@@ -1,11 +1,7 @@
-/**
- * src/lib/algorand.js
- * Full Algorand integration: Pera Wallet + Purchase Escrow contract
- */
 import algosdk from 'algosdk'
 import { PeraWalletConnect } from '@perawallet/connect'
 
-// ── Config ─────────────────────────────────────────────────────
+//Config
 const APP_ID      = Number(import.meta.env.VITE_APP_ID      || 0)
 const APP_ADDRESS = import.meta.env.VITE_APP_ADDRESS         || ''
 const ALGOD_TOKEN  = import.meta.env.VITE_ALGOD_TOKEN        || 'a'.repeat(64)
@@ -19,7 +15,7 @@ export const peraWallet = new PeraWalletConnect({
   chainId: 416002, // Algorand Testnet
 })
 
-// ── Wallet ──────────────────────────────────────────────────────
+//Wallet 
 export async function connectWallet() {
   const accounts = await peraWallet.connect()
   peraWallet.connector?.on('disconnect', () => peraWallet.disconnect())
@@ -39,7 +35,7 @@ export async function reconnectWallet() {
   }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────
+// Helpers 
 async function getSP(fee = 1000) {
   const sp = await algodClient.getTransactionParams().do()
   sp.fee = fee
@@ -51,7 +47,7 @@ async function waitConfirm(txId) {
   return algosdk.waitForConfirmation(algodClient, txId, 4)
 }
 
-// ── Contract calls ──────────────────────────────────────────────
+//Contract calls
 export async function optInToContract(address) {
   const sp  = await getSP()
   const txn = algosdk.makeApplicationOptInTxnFromObject({
@@ -128,7 +124,7 @@ export async function cancelEscrow(address) {
   return txId
 }
 
-// ── Read state ──────────────────────────────────────────────────
+//Read state 
 export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 
 export async function getBuyerStatus(address) {
