@@ -3,7 +3,7 @@ import cors from 'cors'
 import fetch from 'node-fetch'
 
 const app = express()
-app.use(cors())
+app.use(cors({ origin: '*' }))
 app.use(express.json())
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY
