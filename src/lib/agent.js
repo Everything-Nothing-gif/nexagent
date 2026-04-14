@@ -1,4 +1,4 @@
-const BACKEND = 'http://localhost:3001'
+const BACKEND = import.meta.env.VITE_BACKEND || 'http://localhost:3001'
 
 function isProductQuery(msg) {
   const keywords = ['find','search','buy','price','cheap','best','compare','deal','shop','looking for','need a','get me','show me']
