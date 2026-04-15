@@ -46,7 +46,7 @@ export default function App() {
       {wallet.connected&&(
         <div style={{display:'flex',alignItems:'center',gap:12,padding:'8px 22px',background:'rgba(29,158,117,0.04)',borderBottom:'0.5px solid rgba(29,158,117,0.1)',fontSize:10,fontFamily:'DM Mono,monospace'}}>
           <span style={{color:'#2c2c3a'}}>▸</span>
-          <span style={{color:'#444460'}}>App ID 758679885</span>
+          <span style={{color:'#444460'}}>App ID {import.meta.env.VITE_APP_ID}</span>
           <span style={{color:'#2c2c3a'}}>·</span>
           <span style={{color:'#444460'}}>escrow contract active</span>
           <div style={{padding:'2px 10px',borderRadius:4,fontSize:9,background:'rgba(29,158,117,0.12)',border:'0.5px solid rgba(29,158,117,0.25)',color:'#1d9e75',animation:txState==='active'?'pulse 1s infinite':'none',marginLeft:4}}>
