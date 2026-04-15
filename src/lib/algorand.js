@@ -155,6 +155,7 @@ export async function getBuyerStatus(address) {
     const res  = await fetch(url)
     if (!res.ok) return { isOptedIn: false, status: 'not_opted_in', statusCode: -1, amount: 0, orderId: '', lockedAt: 0 }
     const info = await res.json()
+    if (!info['app-local-state']) return { isOptedIn: false, status: 'not_opted_in', statusCode: -1, amount: 0, orderId: '', lockedAt: 0 }
     const ls   = {}
     for (const kv of info['app-local-state']?.['key-value'] || []) {
       const key = atob(kv.key)

@@ -79,8 +79,13 @@ create_escrow:
   txn Sender
   byte "status"
   app_local_get
+  dup
   int 0
   ==
+  swap
+  int 3
+  ==
+  ||
   assert
   txn Sender
   byte "status"
