@@ -69,6 +69,7 @@ async function waitConfirm(txId) {
 
 //Contract calls
 export async function optInToContract(address) {
+  console.log('DEBUG optIn:', { address, APP_ID, APP_ADDRESS })
   const sp  = await getSP()
   const txn = algosdk.makeApplicationOptInTxnFromObject({
     suggestedParams: sp,
