@@ -37,6 +37,7 @@ export function useWallet() {
     setError(null)
     try {
       const addr = await connectWallet()
+      console.log('DEBUG addr from connectWallet:', addr)
       await hydrateWallet(addr)
     } catch (e) {
       setError(e.message || 'Failed to connect wallet')

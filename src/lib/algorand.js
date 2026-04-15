@@ -82,6 +82,7 @@ export async function optInToContract(address) {
 }
 
 export async function createEscrow(address, orderId, amountAlgo) {
+  console.log('DEBUG createEscrow:', { address, orderId, amountAlgo, APP_ID, APP_ADDRESS })
   const micro = Math.round(amountAlgo * 1_000_000)
   const sp    = await getSP(1000)
 
