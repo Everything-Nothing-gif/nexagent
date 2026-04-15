@@ -152,6 +152,7 @@ export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 export async function getBuyerStatus(address) {
   try {
     const info = await algodClient.accountApplicationInformation(address, APP_ID).do()
+    console.log('DEBUG getBuyerStatus raw:', JSON.stringify(info))
     const ls   = {}
     for (const kv of info['app-local-state']?.['key-value'] || []) {
       const key = atob(kv.key)
@@ -202,4 +203,4 @@ export const truncate = (addr) =>
   addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : ''
 
 export const toAlgo = (micro) => (micro / 1_000_000).toFixed(3)
-// cache bust Wed Apr 15 19:08:56 IST 2026
+
