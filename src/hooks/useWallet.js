@@ -12,12 +12,11 @@ import {
 export function useWallet() {
   const [address,   setAddress]   = useState(null)
   const [balance,   setBalance]   = useState(0)
-  const [status,    setStatus]    = useState(null)   // buyer on-chain status
+  const [status,    setStatus]    = useState(null)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
   const [connected, setConnected] = useState(false)
 
-  // Try to restore session on mount
   useEffect(() => {
     reconnectWallet().then((addr) => {
       if (addr) hydrateWallet(addr)
@@ -37,7 +36,6 @@ export function useWallet() {
     setError(null)
     try {
       const addr = await connectWallet()
-      console.log('DEBUG addr from connectWallet:', addr)
       await hydrateWallet(addr)
     } catch (e) {
       setError(e.message || 'Failed to connect wallet')
@@ -54,49 +52,25 @@ export function useWallet() {
     setStatus(null)
   }, [])
 
-const ensureOptedIn = useCallback(async () => {
-  if (!address) return false
-  // Always do a fresh check — never trust cached status
-  const fresh = await getBuyerStatus(address)
-  setStatus(fresh)
-  if (fresh.isOptedIn) return true
-
-  setLoading(true)
-  try {
-    await optInToContract(address)
-    const st = await getBuyerStatus(address)
-    setStatus(st)
-    return st.isOptedIn
-  } catch (e) {
-    console.error('OPT-IN FAILED:', e.message, e)
-    setError(e.message || 'Opt-in failed')
-    return false
-  } finally {
-    setLoading(false)
-  }
-}, [address])
-
-  const refresh = useCallback(async () => {
-    if (!address) return
-    const [bal, st] = await Promise.all([getBalance(address), getBuyerStatus(address)])
-    setBalance(bal)
-    setStatus(st)
+  const ensureOptedIn = useCallback(async () => {
+    if (!address) return false
+    const fresh = await getBuyerStatus(address)
+    setStatus(fresh)
+    if (fresh.isOptedIn) return true
+    setLoading(true)
+    try {
+      await optInToContract(address)
+      const st = await getBuyerStatus(address)
+      setStatus(st)
+      return st.isOptedIn
+    } catch (e) {
+      console.error('OPT-IN FAILED:', e.message, e)
+      setError(e.message || 'Opt-in failed')
+      return false
+    } finally {
+      setLoading(false)
+    }
   }, [address])
-
-  return {
-    address,
-    balance,
-    status,
-    loading,
-    error,
-    connected,
-    connect,
-    disconnect,
-    truncate,
-    ensureOptedIn,
-    refresh,
-  }
-}
 
   const refresh = useCallback(async () => {
     if (!address) return
