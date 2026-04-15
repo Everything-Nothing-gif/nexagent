@@ -18,8 +18,28 @@ export const peraWallet = new PeraWalletConnect({
 //Wallet 
 export async function connectWallet() {
   const accounts = await peraWallet.connect()
-  peraWallet.connector?.on('disconnect', () => peraWallet.disconnect())
-  return accounts[0]
+
+  if (accounts && accounts.length > 0) {
+    peraWallet.connector?.on('disconnect', () => peraWallet.disconnect())
+    return accounts[0]
+  }
+
+  // QR scan flow: accounts arrive late via connector event
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('Wallet connection timed out')), 120000)
+
+    peraWallet.connector?.on('connect', (error, payload) => {
+      clearTimeout(timeout)
+      if (error) return reject(error)
+      const addrs = payload?.params?.[0]?.accounts
+      if (addrs && addrs.length > 0) {
+        peraWallet.connector?.on('disconnect', () => peraWallet.disconnect())
+        resolve(addrs[0])
+      } else {
+        reject(new Error('No accounts in connect payload'))
+      }
+    })
+  })
 }
 
 export async function disconnectWallet() {
