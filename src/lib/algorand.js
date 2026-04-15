@@ -152,6 +152,7 @@ export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 export async function getBuyerStatus(address) {
   try {
     const info = await algodClient.accountApplicationInformation(address, APP_ID).do()
+    console.log("DEBUG getBuyerStatus raw:", JSON.stringify(info))
     console.log('DEBUG getBuyerStatus raw:', JSON.stringify(info))
     const ls   = {}
     for (const kv of info['app-local-state']?.['key-value'] || []) {
