@@ -152,7 +152,7 @@ export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 export async function getBuyerStatus(address) {
   try {
     const info = await algodClient.accountApplicationInformation(address, APP_ID).do()
-    console.log("DEBUG getBuyerStatus raw:", JSON.stringify(info))
+    if (!info['app-local-state']) return { isOptedIn: false, status: 'not_opted_in', statusCode: -1, amount: 0, orderId: '', lockedAt: 0 }
     const ls   = {}
     for (const kv of info['app-local-state']?.['key-value'] || []) {
       const key = atob(kv.key)
