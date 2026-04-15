@@ -19,6 +19,7 @@ async function handleBuy() {
     const { isOptedIn } = await getBuyerStatus(address)
     if (!isOptedIn) {
       await optInToContract(address)
+      await new Promise(r => setTimeout(r, 1500))
     }
     setBtnState('confirming')
     const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
