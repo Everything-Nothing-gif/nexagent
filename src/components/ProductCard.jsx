@@ -6,6 +6,8 @@ function toAlgoPrice(usd) { return (usd / ALGO_RATE).toFixed(0) }
 
 export default function ProductCard({ product, wallet, onPurchase }) {
   const [btnState, setBtnState] = useState('idle')
+  // Reset stuck state on mount
+  useEffect(() => { setBtnState('idle') }, [])
   const [txId, setTxId] = useState(null)
   const [escrowStatus, setEscrowStatus] = useState(null)
   const { connected, address, refresh } = wallet
