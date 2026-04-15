@@ -36,8 +36,8 @@ export default function ProductCard({ product, wallet, onPurchase }) {
       const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
       setTxId(result.txId)
       setBtnState('done')
-      const st = await getBuyerStatus(addr)
-      setEscrowStatus(st)
+      const st = await getBuyerStatus(address)
+      setEscrowStatus(st.statusCode === 1 ? st : null)
       await refresh()
       onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
     } catch (e) {
