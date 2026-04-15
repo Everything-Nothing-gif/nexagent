@@ -36,7 +36,7 @@ export default function ProductCard({ product, wallet, onPurchase }) {
       const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
       setTxId(result.txId)
       setBtnState('done')
-      const st = await getBuyerStatus(address)
+      const st = await getBuyerStatus(addr)
       setEscrowStatus(st)
       await refresh()
       onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
@@ -49,10 +49,12 @@ export default function ProductCard({ product, wallet, onPurchase }) {
 
   async function handleConfirm() {
     if (btnState !== 'idle') return
+    const addr = address || wallet.address
+    if (!addr) { console.error('No address'); return }
     setBtnState('confirming')
     try {
-      await confirmDelivery(address)
-      const st = await getBuyerStatus(address)
+      await confirmDelivery(addr)
+      const st = await getBuyerStatus(addr)
       setEscrowStatus(st.statusCode === 1 ? st : null)
       setTxId(null)
       setBtnState('idle')
@@ -68,8 +70,8 @@ export default function ProductCard({ product, wallet, onPurchase }) {
     if (btnState !== 'idle') return
     setBtnState('signing')
     try {
-      await cancelEscrow(address)
-      const st = await getBuyerStatus(address)
+      const addr = address || wallet.address; await cancelEscrow(addr)
+      const st = await getBuyerStatus(addr)
       setEscrowStatus(st.statusCode === 1 ? st : null)
       setTxId(null)
       setBtnState('idle')
