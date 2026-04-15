@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { createEscrow } from '../lib/algorand'
+import { createEscrow, getBuyerStatus, optInToContract } from '../lib/algorand'
 
 const ALGO_RATE = 0.18
 function toAlgoPrice(usd) { return (usd / ALGO_RATE).toFixed(0) }
@@ -10,26 +10,28 @@ export default function ProductCard({ product, wallet, onPurchase }) {
   const { connected, address, ensureOptedIn, refresh } = wallet
   const b = product.isBest
 
-  async function handleBuy() {
-    console.log('wallet state:', { connected, address })
-    if (!connected || !address) { wallet.connect(); return }
-    if (btnState !== 'idle') return
-    setBtnState('signing')
-    try {
-      const ok = await ensureOptedIn()
-      if (!ok) { setBtnState('idle'); return }
-      setBtnState('confirming')
-      const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
-      setTxId(result.txId)
-      setBtnState('done')
-      await refresh()
-      onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
-    } catch (e) {
-      console.error(e)
-      setBtnState('error')
-      setTimeout(() => setBtnState('idle'), 3000)
+async function handleBuy() {
+  console.log('wallet state:', { connected, address })
+  if (!connected || !address) { wallet.connect(); return }
+  if (btnState !== 'idle') return
+  setBtnState('signing')
+  try {
+    const { isOptedIn } = await getBuyerStatus(address)
+    if (!isOptedIn) {
+      await optInToContract(address)
     }
+    setBtnState('confirming')
+    const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
+    setTxId(result.txId)
+    setBtnState('done')
+    await refresh()
+    onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
+  } catch (e) {
+    console.error('handleBuy error:', e)
+    setBtnState('error')
+    setTimeout(() => setBtnState('idle'), 3000)
   }
+}  
 
   const btnLabel = {
     idle:       connected ? 'BUY WITH ALGO' : 'CONNECT WALLET',
