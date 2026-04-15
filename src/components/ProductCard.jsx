@@ -11,6 +11,7 @@ export default function ProductCard({ product, wallet, onPurchase }) {
   const b = product.isBest
 
   async function handleBuy() {
+    console.log('wallet state:', { connected, address })
     if (!connected || !address) { wallet.connect(); return }
     if (btnState !== 'idle') return
     setBtnState('signing')
