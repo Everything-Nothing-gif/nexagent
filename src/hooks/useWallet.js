@@ -54,23 +54,24 @@ export function useWallet() {
     setStatus(null)
   }, [])
 
-  const ensureOptedIn = useCallback(async () => {
-    if (!address) return false
-    if (status?.isOptedIn) return true
-    setLoading(true)
-    try {
-      await optInToContract(address)
-      const st = await getBuyerStatus(address)
-      setStatus(st)
-      return true
-    } catch (e) {
-      setError(e.message || 'Opt-in failed')
-      return false
-    } finally {
-      setLoading(false)
-    }
-  }, [address, status])
 
+const ensureOptedIn = useCallback(async () => {
+  if (!address) return false
+  if (status?.isOptedIn) return true
+  setLoading(true)
+  try {
+    await optInToContract(address)
+    const st = await getBuyerStatus(address)
+    setStatus(st)
+    return true
+  } catch (e) {
+    console.error('OPT-IN FAILED:', e.message, e)
+    setError(e.message || 'Opt-in failed')
+    return false
+  } finally {
+    setLoading(false)
+  }
+}, [address, status])
   const refresh = useCallback(async () => {
     if (!address) return
     const [bal, st] = await Promise.all([getBalance(address), getBuyerStatus(address)])

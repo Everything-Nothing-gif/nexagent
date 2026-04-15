@@ -75,8 +75,6 @@ no_op:
 
 create_escrow:
   txn Sender
-  app_local_get
-  pop
   byte "status"
   app_local_get
   int 0
