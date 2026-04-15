@@ -75,3 +75,47 @@ const ensureOptedIn = useCallback(async () => {
     setLoading(false)
   }
 }, [address])
+
+  const refresh = useCallback(async () => {
+    if (!address) return
+    const [bal, st] = await Promise.all([getBalance(address), getBuyerStatus(address)])
+    setBalance(bal)
+    setStatus(st)
+  }, [address])
+
+  return {
+    address,
+    balance,
+    status,
+    loading,
+    error,
+    connected,
+    connect,
+    disconnect,
+    truncate,
+    ensureOptedIn,
+    refresh,
+  }
+}
+
+  const refresh = useCallback(async () => {
+    if (!address) return
+    const [bal, st] = await Promise.all([getBalance(address), getBuyerStatus(address)])
+    setBalance(bal)
+    setStatus(st)
+  }, [address])
+
+  return {
+    address,
+    balance,
+    status,
+    loading,
+    error,
+    connected,
+    connect,
+    disconnect,
+    truncate,
+    ensureOptedIn,
+    refresh,
+  }
+}
