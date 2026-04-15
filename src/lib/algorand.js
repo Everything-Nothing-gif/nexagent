@@ -70,11 +70,11 @@ async function waitConfirm(txId) {
 //Contract calls
 export async function optInToContract(address) {
   console.log('DEBUG optIn:', { address, APP_ID, APP_ADDRESS })
-  const sp  = await getSP()
+  const sp = await getSP()
   const txn = algosdk.makeApplicationOptInTxnFromObject({
     suggestedParams: sp,
-    from: address,
-    appIndex: APP_ID,
+    sender: address,
+    appIndex: Number(APP_ID),
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
   const { txId } = await algodClient.sendRawTransaction(signed).do()
@@ -86,12 +86,11 @@ export async function createEscrow(address, orderId, amountAlgo) {
   console.log('DEBUG createEscrow:', { address, orderId, amountAlgo, APP_ID, APP_ADDRESS })
   const micro = Math.round(amountAlgo * 1_000_000)
   const sp    = await getSP(1000)
-  const sender = algosdk.decodeAddress(address).publicKey
 
   const appTxn = algosdk.makeApplicationNoOpTxnFromObject({
     suggestedParams: sp,
-    from: algosdk.encodeAddress(sender),
-    appIndex: APP_ID,
+    sender: address,
+    appIndex: Number(APP_ID),
     appArgs: [
       new TextEncoder().encode('create_escrow'),
       new TextEncoder().encode(orderId),
@@ -99,17 +98,31 @@ export async function createEscrow(address, orderId, amountAlgo) {
   })
   const payTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     suggestedParams: sp,
-    from: algosdk.encodeAddress(sender),
-    to: APP_ADDRESS,
+    sender: address,
+    receiver: APP_ADDRESS,
     amount: micro,
   })
+
+  algosdk.assignGroupID([appTxn, payTxn])
+
+  const signed = await peraWallet.signTransaction([[{ txn: appTxn }, { txn: payTxn }]])
+  const { txId } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txId)
+
+  return {
+    txId,
+    explorerUrl: `https://testnet.algoexplorer.io/tx/${txId}`,
+    orderId,
+    amountMicro: micro,
+  }
+}
 
 export async function confirmDelivery(agentAddress, buyerAddress) {
   const sp  = await getSP(2000)
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
     suggestedParams: sp,
-    from: agentAddress,
-    appIndex: APP_ID,
+    sender: agentAddress,
+    appIndex: Number(APP_ID),
     appArgs: [new TextEncoder().encode('confirm_delivery')],
     accounts: [buyerAddress],
   })
@@ -123,8 +136,8 @@ export async function cancelEscrow(address) {
   const sp  = await getSP(2000)
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
     suggestedParams: sp,
-    from: address,
-    appIndex: APP_ID,
+    sender: address,
+    appIndex: Number(APP_ID),
     appArgs: [new TextEncoder().encode('cancel_escrow')],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
@@ -133,7 +146,7 @@ export async function cancelEscrow(address) {
   return txId
 }
 
-//Read state 
+//Read state
 export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 
 export async function getBuyerStatus(address) {
