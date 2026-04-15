@@ -77,7 +77,7 @@ export async function optInToContract(address) {
     appIndex: Number(APP_ID),
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txId } = await algodClient.sendRawTransaction(signed).do()
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
   await waitConfirm(txId)
   return txId
 }
@@ -106,7 +106,7 @@ export async function createEscrow(address, orderId, amountAlgo) {
   algosdk.assignGroupID([appTxn, payTxn])
 
   const signed = await peraWallet.signTransaction([[{ txn: appTxn }, { txn: payTxn }]])
-  const { txId } = await algodClient.sendRawTransaction(signed).do()
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
   await waitConfirm(txId)
 
   return {
@@ -127,7 +127,7 @@ export async function confirmDelivery(agentAddress, buyerAddress) {
     accounts: [buyerAddress],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txId } = await algodClient.sendRawTransaction(signed).do()
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
   await waitConfirm(txId)
   return txId
 }
@@ -141,7 +141,7 @@ export async function cancelEscrow(address) {
     appArgs: [new TextEncoder().encode('cancel_escrow')],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txId } = await algodClient.sendRawTransaction(signed).do()
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
   await waitConfirm(txId)
   return txId
 }

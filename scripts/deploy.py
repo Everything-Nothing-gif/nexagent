@@ -48,9 +48,11 @@ create:
   return
 
 opt_in:
+  txn Sender
   byte "status"
   int 0
   app_local_put
+  txn Sender
   byte "amount"
   int 0
   app_local_put
