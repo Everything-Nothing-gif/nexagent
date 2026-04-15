@@ -151,8 +151,10 @@ export const STATUS = ['empty', 'escrowed', 'released', 'refunded']
 
 export async function getBuyerStatus(address) {
   try {
-    const info = await algodClient.accountApplicationInformation(address, APP_ID).do()
-    if (!info['app-local-state']) return { isOptedIn: false, status: 'not_opted_in', statusCode: -1, amount: 0, orderId: '', lockedAt: 0 }
+    const url = `https://testnet-api.algonode.cloud/v2/accounts/${address}/applications/${APP_ID}`
+    const res  = await fetch(url)
+    if (!res.ok) return { isOptedIn: false, status: 'not_opted_in', statusCode: -1, amount: 0, orderId: '', lockedAt: 0 }
+    const info = await res.json()
     const ls   = {}
     for (const kv of info['app-local-state']?.['key-value'] || []) {
       const key = atob(kv.key)
