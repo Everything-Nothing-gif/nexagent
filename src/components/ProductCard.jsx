@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { createEscrow, confirmDelivery, cancelEscrow, getBuyerStatus, optInToContract } from '../lib/algorand'
 
 const ALGO_RATE = 0.18
@@ -11,6 +11,9 @@ export default function ProductCard({ product, wallet, onPurchase }) {
   const [txId, setTxId] = useState(null)
   const [escrowStatus, setEscrowStatus] = useState(null)
   const { connected, address, refresh } = wallet
+  const addressRef = useRef(address)
+  useEffect(() => { addressRef.current = address }, [address])
+  const getAddr = () => addressRef.current || wallet.address || address
   const b = product.isBest
 
   // On mount and when address changes, check if already in escrow
@@ -49,7 +52,7 @@ export default function ProductCard({ product, wallet, onPurchase }) {
 
   async function handleConfirm() {
     if (btnState !== 'idle') return
-    const addr = address || wallet.address
+    const addr = getAddr()
     if (!addr) { console.error('No address'); return }
     setBtnState('confirming')
     try {
@@ -70,7 +73,7 @@ export default function ProductCard({ product, wallet, onPurchase }) {
     if (btnState !== 'idle') return
     setBtnState('signing')
     try {
-      const addr = address || wallet.address; await cancelEscrow(addr)
+      const addr = getAddr(); await cancelEscrow(addr)
       const st = await getBuyerStatus(addr)
       setEscrowStatus(st.statusCode === 1 ? st : null)
       setTxId(null)
