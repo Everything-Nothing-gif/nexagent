@@ -50,7 +50,8 @@ export default function ProductCard({ product, wallet, onPurchase }) {
     setBtnState('confirming')
     try {
       await confirmDelivery(address)
-      setEscrowStatus(null)
+      const st = await getBuyerStatus(address)
+      setEscrowStatus(st.statusCode === 1 ? st : null)
       setTxId(null)
       setBtnState('idle')
       await refresh()
@@ -66,7 +67,8 @@ export default function ProductCard({ product, wallet, onPurchase }) {
     setBtnState('signing')
     try {
       await cancelEscrow(address)
-      setEscrowStatus(null)
+      const st = await getBuyerStatus(address)
+      setEscrowStatus(st.statusCode === 1 ? st : null)
       setTxId(null)
       setBtnState('idle')
       await refresh()
