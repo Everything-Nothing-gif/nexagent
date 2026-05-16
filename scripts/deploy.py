@@ -83,8 +83,13 @@ create_escrow:
   int 0
   ==
   swap
+  dup
+  int 2
+  ==
+  swap
   int 3
   ==
+  ||
   ||
   assert
   gtxn 1 TypeEnum
