@@ -81,6 +81,7 @@ export function useWallet() {
 
   return {
     address,
+    truncatedAddress: truncate(address),
     balance,
     status,
     loading,

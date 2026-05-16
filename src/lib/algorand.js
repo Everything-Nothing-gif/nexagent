@@ -77,9 +77,9 @@ export async function optInToContract(address) {
     appIndex: Number(APP_ID),
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txId)
-  return txId
+  const { txid } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txid)
+  return txid
 }
 
 export async function createEscrow(address, orderId, amountAlgo) {
@@ -117,19 +117,18 @@ export async function createEscrow(address, orderId, amountAlgo) {
   }
 }
 
-export async function confirmDelivery(agentAddress, buyerAddress) {
+export async function confirmDelivery(address) {
   const sp  = await getSP(2000)
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
     suggestedParams: sp,
-    sender: agentAddress,
+    sender: address,
     appIndex: Number(APP_ID),
     appArgs: [new TextEncoder().encode('confirm_delivery')],
-    accounts: [buyerAddress],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txId)
-  return txId
+  const { txid } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txid)
+  return txid
 }
 
 export async function cancelEscrow(address) {
@@ -141,9 +140,9 @@ export async function cancelEscrow(address) {
     appArgs: [new TextEncoder().encode('cancel_escrow')],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txId)
-  return txId
+  const { txid } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txid)
+  return txid
 }
 
 //Read state
