@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { createEscrow, confirmDelivery, cancelEscrow, getBuyerStatus, optInToContract } from '../lib/algorand'
+import { createEscrow, confirmDelivery, cancelEscrow, getBuyerStatus, optInToContract, getAlgoUsdPrice } from '../lib/algorand'
 
-const ALGO_RATE = 0.18
-function toAlgoPrice(usd) { return (usd / ALGO_RATE).toFixed(0) }
+const FALLBACK_ALGO_RATE = 0.18
+function toAlgoPrice(usd, rate) { return (usd / rate).toFixed(0) }
 
 export default function ProductCard({ product, wallet, onPurchase }) {
   const [btnState, setBtnState] = useState('idle')
+  const [algoRate, setAlgoRate] = useState(FALLBACK_ALGO_RATE)
   // Reset stuck state on mount
   useEffect(() => { setBtnState('idle') }, [])
+  // Fetch live ALGO/USD price from Tinyman on mount
+  useEffect(() => {
+    getAlgoUsdPrice().then(rate => setAlgoRate(rate))
+  }, [])
   const [txId, setTxId] = useState(null)
   const [escrowStatus, setEscrowStatus] = useState(null)
   const { connected, address, refresh } = wallet
@@ -36,13 +41,13 @@ export default function ProductCard({ product, wallet, onPurchase }) {
         await new Promise(r => setTimeout(r, 1500))
       }
       setBtnState('confirming')
-      const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
+      const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / algoRate)
       setTxId(result.txId)
+      setBtnState('done')
       const st = await getBuyerStatus(address)
       setEscrowStatus(st.statusCode === 1 ? st : null)
       await refresh()
       onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
-      setBtnState('idle') // reset so confirm/cancel buttons are clickable
     } catch (e) {
       console.error('handleBuy error:', e)
       setBtnState('error')
@@ -141,7 +146,7 @@ export default function ProductCard({ product, wallet, onPurchase }) {
           textShadow: b ? '0 0 20px rgba(29,158,117,0.7), 0 0 40px rgba(29,158,117,0.3)' : 'none',
         }}>${product.price.toFixed(2)}</span>
         <span style={{fontSize:11, ...mono, color: b ? 'rgba(29,158,117,0.85)' : '#3a3a52'}}>
-          ≈ {toAlgoPrice(product.price)} ALGO
+          ≈ {toAlgoPrice(product.price, algoRate)} ALGO
         </span>
       </div>
 

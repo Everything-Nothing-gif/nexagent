@@ -77,9 +77,9 @@ export async function optInToContract(address) {
     appIndex: Number(APP_ID),
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txid)
-  return txid
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txId)
+  return txId
 }
 
 export async function createEscrow(address, orderId, amountAlgo) {
@@ -117,18 +117,19 @@ export async function createEscrow(address, orderId, amountAlgo) {
   }
 }
 
-export async function confirmDelivery(address) {
+export async function confirmDelivery(agentAddress, buyerAddress) {
   const sp  = await getSP(2000)
   const txn = algosdk.makeApplicationNoOpTxnFromObject({
     suggestedParams: sp,
-    sender: address,
+    sender: agentAddress,
     appIndex: Number(APP_ID),
     appArgs: [new TextEncoder().encode('confirm_delivery')],
+    accounts: [buyerAddress],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txid)
-  return txid
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txId)
+  return txId
 }
 
 export async function cancelEscrow(address) {
@@ -140,9 +141,9 @@ export async function cancelEscrow(address) {
     appArgs: [new TextEncoder().encode('cancel_escrow')],
   })
   const signed = await peraWallet.signTransaction([[{ txn }]])
-  const { txid } = await algodClient.sendRawTransaction(signed).do()
-  await waitConfirm(txid)
-  return txid
+  const { txid: txId } = await algodClient.sendRawTransaction(signed).do()
+  await waitConfirm(txId)
+  return txId
 }
 
 //Read state
@@ -205,6 +206,40 @@ export const truncate = (addr) =>
   addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : ''
 
 export const toAlgo = (micro) => (micro / 1_000_000).toFixed(3)
+
+// ─── Tinyman Integration ──────────────────────────────────────────────────────
+// Fetches live ALGO/USD price from Tinyman V2 ALGO-USDC pool on Mainnet.
+// The pool account holds both ALGO (native) and USDC (ASA 31566704).
+// Price = USDC reserve / ALGO reserve (both have 6 decimals, so ratio is direct).
+// Falls back to $0.18 if the request fails.
+
+const TINYMAN_ALGO_USDC_POOL = 'FBBZKUSZ2JYQVWGJFKWMRXG7CZHM3L2AA6LYI64Q3SCLS4K5ZNLVRKXLE'
+const USDC_ASSET_ID = 31566704
+
+export async function getAlgoUsdPrice() {
+  try {
+    const res = await fetch(
+      `https://mainnet-api.algonode.cloud/v2/accounts/${TINYMAN_ALGO_USDC_POOL}`
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+
+    const algoReserve = data.amount // microALGO
+    const usdcAsset = data.assets?.find(a => a['asset-id'] === USDC_ASSET_ID)
+    const usdcReserve = usdcAsset?.amount // microUSDC (6 decimals, same as ALGO)
+
+    if (!algoReserve || !usdcReserve) throw new Error('Reserves not found')
+
+    // Both have 6 decimals so the ratio gives USD per ALGO directly
+    const price = usdcReserve / algoReserve
+    console.log(`[Tinyman] Live ALGO price: $${price.toFixed(4)}`)
+    return parseFloat(price.toFixed(4))
+  } catch (e) {
+    console.warn('[Tinyman] Price fetch failed, using fallback $0.18:', e.message)
+    return 0.18
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // bust Thu Apr 16 00:07:39 IST 2026
 // bust Thu Apr 16 00:08:48 IST 2026
