@@ -87,6 +87,14 @@ create_escrow:
   ==
   ||
   assert
+  gtxn 1 TypeEnum
+  int pay
+  ==
+  assert
+  gtxn 1 Receiver
+  global CurrentApplicationAddress
+  ==
+  assert
   txn Sender
   byte "status"
   int 1
@@ -117,7 +125,33 @@ create_escrow:
 confirm_delivery:
   txn Sender
   byte "status"
+  app_local_get
+  int 1
+  ==
+  assert
+  txn Sender
+  byte "amount"
+  app_local_get
+  int 1000
+  -
+  store 0
+  itxn_begin
+    int pay
+    itxn_field TypeEnum
+    txn Sender
+    itxn_field Receiver
+    load 0
+    itxn_field Amount
+    int 1000
+    itxn_field Fee
+  itxn_submit
+  txn Sender
+  byte "status"
   int 2
+  app_local_put
+  txn Sender
+  byte "amount"
+  int 0
   app_local_put
   int 1
   return
@@ -125,7 +159,33 @@ confirm_delivery:
 cancel_escrow:
   txn Sender
   byte "status"
+  app_local_get
+  int 1
+  ==
+  assert
+  txn Sender
+  byte "amount"
+  app_local_get
+  int 1000
+  -
+  store 1
+  itxn_begin
+    int pay
+    itxn_field TypeEnum
+    txn Sender
+    itxn_field Receiver
+    load 1
+    itxn_field Amount
+    int 1000
+    itxn_field Fee
+  itxn_submit
+  txn Sender
+  byte "status"
   int 3
+  app_local_put
+  txn Sender
+  byte "amount"
+  int 0
   app_local_put
   int 1
   return
@@ -164,7 +224,6 @@ def deploy():
 
     result = transaction.wait_for_confirmation(client, tx_id, 4)
     app_id = result["application-index"]
-    app_address = account.address_from_private_key(private_key)
 
     import algosdk
     app_addr = algosdk.logic.get_application_address(app_id)
@@ -172,6 +231,20 @@ def deploy():
     print(f"\n✅ Contract deployed!")
     print(f"APP_ID:      {app_id}")
     print(f"APP_ADDRESS: {app_addr}")
+
+    # Fund the contract so it can send inner transactions (refunds/payments)
+    print(f"\nFunding contract with 0.2 ALGO for inner transaction fees...")
+    sp2 = client.suggested_params()
+    fund_txn = transaction.PaymentTxn(
+        sender=address,
+        sp=sp2,
+        receiver=app_addr,
+        amt=200_000,  # 0.2 ALGO
+    )
+    signed_fund = fund_txn.sign(private_key)
+    fund_tx_id = client.send_transaction(signed_fund)
+    transaction.wait_for_confirmation(client, fund_tx_id, 4)
+    print(f"Contract funded! TX: {fund_tx_id}")
 
     with open("scripts/deployment.json", "w") as f:
         json.dump({"app_id": app_id, "app_address": app_addr}, f, indent=2)
