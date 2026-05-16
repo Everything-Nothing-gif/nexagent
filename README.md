@@ -326,7 +326,6 @@ Open [http://localhost:5173](http://localhost:5173)
 - **Testnet only** — not for real funds
 - **Single escrow per wallet** — one active order at a time per address
 - **Render free tier** — backend may have ~30s cold start after inactivity
-- **ALGO rate** — hardcoded at `$0.18/ALGO`; not fetched live
 
 ---
 
