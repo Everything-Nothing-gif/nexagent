@@ -38,11 +38,11 @@ export default function ProductCard({ product, wallet, onPurchase }) {
       setBtnState('confirming')
       const result = await createEscrow(address, `ORDER-${Date.now()}`, product.price / ALGO_RATE)
       setTxId(result.txId)
-      setBtnState('done')
       const st = await getBuyerStatus(address)
       setEscrowStatus(st.statusCode === 1 ? st : null)
       await refresh()
       onPurchase?.({ product, txId: result.txId, explorerUrl: result.explorerUrl })
+      setBtnState('idle') // reset so confirm/cancel buttons are clickable
     } catch (e) {
       console.error('handleBuy error:', e)
       setBtnState('error')
