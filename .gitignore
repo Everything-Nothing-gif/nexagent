@@ -5,3 +5,6 @@ dist/
 .env.production
 .env.development
 .env
+.env.production.local
+.env*.local
+.vercel
